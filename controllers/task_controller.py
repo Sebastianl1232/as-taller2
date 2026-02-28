@@ -296,12 +296,28 @@ def register_routes(app):
     @app.errorhandler(404)
     def not_found_error(error):
         """Maneja errores 404 - Página no encontrada"""
-        return render_template('404.html'), 404
+        return render_template(
+            'error.html',
+            title='Página no encontrada',
+            breadcrumb='Error 404',
+            icon='search',
+            color='warning',
+            heading='404 - Página no encontrada',
+            message='La URL solicitada no existe o fue movida.'
+        ), 404
     
     
     @app.errorhandler(500)
     def internal_error(error):
         """Maneja errores 500 - Error interno del servidor"""
         db.session.rollback()
-        return render_template('500.html'), 500
+        return render_template(
+            'error.html',
+            title='Error interno',
+            breadcrumb='Error 500',
+            icon='exclamation-triangle',
+            color='danger',
+            heading='500 - Error interno del servidor',
+            message='Ocurrió un problema inesperado. Inténtalo nuevamente.'
+        ), 500
 
