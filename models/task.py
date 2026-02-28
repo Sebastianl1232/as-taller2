@@ -128,5 +128,6 @@ class Task(db.Model):
     
     def delete(self):
         """Elimina la tarea de la base de datos"""
-        pass # TODO: implementar el método
+        db.session.delete(self)
+        db.session.commit()
 
