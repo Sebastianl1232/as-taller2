@@ -75,10 +75,37 @@ def register_routes(app):
             str: HTML del formulario o redirección tras crear la tarea
         """
         if request.method == 'POST':
-            pass # TODO: implementar para una solicitud POST
+        # implementacion de una solicitud POST
+            title = request.form.get('title', '').strip()
+            description = request.form.get('description', '').strip()
+            due_date_raw = request.form.get('due_date', '').strip()
+            completed = request.form.get('completed') == 'on'
+
+            if not title:
+                flash('El título es obligatorio.', 'error')
+                return render_template('task_form.html', task=None)
+
+            due_date = None
+            if due_date_raw:
+                try:
+                    due_date = datetime.strptime(due_date_raw, '%Y-%m-%dT%H:%M')
+                except ValueError:
+                    flash('La fecha de vencimiento no tiene un formato válido.', 'error')
+                    return render_template('task_form.html', task=None)
+
+            task = Task(
+                title=title,
+                description=description if description else None,
+                due_date=due_date
+            )
+            task.completed = completed
+            task.save()
+
+            flash('Tarea creada correctamente.', 'success')
+            return redirect(url_for('task_list'))
         
         # Mostrar formulario de creación
-        pass # TODO: implementar para una solicitud GET
+        return render_template('task_form.html', task=None)
     
     
     @app.route('/tasks/<int:task_id>')
