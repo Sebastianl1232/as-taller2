@@ -208,7 +208,10 @@ def register_routes(app):
         Returns:
             Response: Redirección a la lista de tareas
         """
-        pass # TODO: implementar el método
+        task = Task.query.get_or_404(task_id)
+        task.delete()
+        flash('Tarea eliminada correctamente.', 'success')
+        return redirect(url_for('task_list'))
     
     
     @app.route('/tasks/<int:task_id>/toggle', methods=['POST'])
