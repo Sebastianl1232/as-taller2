@@ -102,7 +102,7 @@ def register_routes(app):
             str: HTML del formulario o redirección tras crear la tarea
         """
         if request.method == 'POST':
-        # implementacion de una solicitud POST
+            # implementación de una solicitud POST
             title = request.form.get('title', '').strip()
             description = request.form.get('description', '').strip()
             due_date_raw = request.form.get('due_date', '').strip()
@@ -110,6 +110,12 @@ def register_routes(app):
 
             if not title:
                 flash('El título es obligatorio.', 'error')
+                return render_template('task_form.html', task=None)
+            if len(title) > 200:
+                flash('El título no puede tener más de 200 caracteres.', 'error')
+                return render_template('task_form.html', task=None)
+            if len(description) > 1000:
+                flash('La descripción no puede tener más de 1000 caracteres.', 'error')
                 return render_template('task_form.html', task=None)
 
             due_date = None
@@ -173,6 +179,12 @@ def register_routes(app):
 
             if not title:
                 flash('El título es obligatorio.', 'error')
+                return render_template('task_form.html', task=task)
+            if len(title) > 200:
+                flash('El título no puede tener más de 200 caracteres.', 'error')
+                return render_template('task_form.html', task=task)
+            if len(description) > 1000:
+                flash('La descripción no puede tener más de 1000 caracteres.', 'error')
                 return render_template('task_form.html', task=task)
 
             due_date = None
