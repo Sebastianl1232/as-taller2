@@ -24,6 +24,13 @@ class Task(db.Model):
     due_date = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    owner_link = db.relationship(
+        'TaskOwner',
+        back_populates='task',
+        uselist=False,
+        cascade='all, delete-orphan'
+    )
     
     def __init__(self, title, description=None, due_date=None):
         """
