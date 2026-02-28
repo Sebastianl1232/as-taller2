@@ -7,6 +7,7 @@ Representa la capa "Controlador" en la arquitectura MVC.
 
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime
+from sqlalchemy import case
 from models.task import Task
 from app import db
 
@@ -67,7 +68,10 @@ def register_routes(app):
         if sort_by == 'title':
             query = query.order_by(Task.title.asc())
         elif sort_by == 'date':
-            query = query.order_by(Task.due_date.asc())
+            query = query.order_by(
+                case((Task.due_date.is_(None), 1), else_=0),
+                Task.due_date.asc()
+            )
         else:
             query = query.order_by(Task.created_at.desc())
 
@@ -237,7 +241,18 @@ def register_routes(app):
         Returns:
             Response: Redirección a la lista de tareas
         """
-        pass # TODO: implementar el método
+        task = Task.query.get_or_404(task_id)
+
+        if task.completed:
+            task.mark_pending()
+            message = 'Tarea marcada como pendiente.'
+        else:
+            task.mark_completed()
+            message = 'Tarea marcada como completada.'
+
+        db.session.commit()
+        flash(message, 'success')
+        return redirect(url_for('task_list'))
     
     
     # Rutas adicionales para versiones futuras
