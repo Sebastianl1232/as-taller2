@@ -106,7 +106,7 @@ class Task(db.Model):
         Returns:
             list: Lista de tareas pendientes
         """
-        pass # TODO: implementar el método
+        return Task.query.filter_by(completed=False).all()
     
     @staticmethod
     def get_completed_tasks():
@@ -116,7 +116,7 @@ class Task(db.Model):
         Returns:
             list: Lista de tareas completadas
         """
-        pass # TODO: implementar el método
+        return Task.query.filter_by(completed=True).all()
     
     @staticmethod
     def get_overdue_tasks():
@@ -126,7 +126,11 @@ class Task(db.Model):
         Returns:
             list: Lista de tareas vencidas
         """
-        pass # TODO: implementar el método
+        return Task.query.filter(
+            Task.completed.is_(False),
+            Task.due_date.isnot(None),
+            Task.due_date < datetime.utcnow()
+        ).all()
     
     def save(self):
         """Guarda la tarea en la base de datos"""
