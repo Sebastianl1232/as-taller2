@@ -163,11 +163,38 @@ def register_routes(app):
         Returns:
             str: HTML del formulario o redirección tras editar
         """
+        task = Task.query.get_or_404(task_id)
+
         if request.method == 'POST':
-            pass # TODO: implementar para una solicitud POST
+            title = request.form.get('title', '').strip()
+            description = request.form.get('description', '').strip()
+            due_date_raw = request.form.get('due_date', '').strip()
+            completed = request.form.get('completed') == 'on'
+
+            if not title:
+                flash('El título es obligatorio.', 'error')
+                return render_template('task_form.html', task=task)
+
+            due_date = None
+            if due_date_raw:
+                try:
+                    due_date = datetime.strptime(due_date_raw, '%Y-%m-%dT%H:%M')
+                except ValueError:
+                    flash('La fecha de vencimiento no tiene un formato válido.', 'error')
+                    return render_template('task_form.html', task=task)
+
+            task.title = title
+            task.description = description if description else None
+            task.due_date = due_date
+            task.completed = completed
+
+            db.session.commit()
+
+            flash('Tarea actualizada correctamente.', 'success')
+            return redirect(url_for('task_list'))
         
         # Mostrar el formulario para editar la tarea
-        pass # TODO: implementar para una solicitud GET
+        return render_template('task_form.html', task=task)
     
     
     @app.route('/tasks/<int:task_id>/delete', methods=['POST'])
