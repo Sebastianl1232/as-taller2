@@ -8,7 +8,9 @@ Representa la capa "Controlador" en la arquitectura MVC.
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime
 from sqlalchemy import case
+from flask_login import current_user, login_required
 from models.task import Task
+from models.user import TaskOwner
 from app import db
 
 
@@ -20,6 +22,14 @@ def register_routes(app):
         app (Flask): Instancia de la aplicación Flask
     """
     
+    def _user_tasks_query():
+        return Task.query.join(TaskOwner, TaskOwner.task_id == Task.id).filter(
+            TaskOwner.user_id == current_user.id
+        )
+
+    def _get_user_task(task_id):
+        return _user_tasks_query().filter(Task.id == task_id).first_or_404()
+
     @app.route('/')
     def index():
         """
@@ -32,6 +42,7 @@ def register_routes(app):
     
     
     @app.route('/tasks')
+    @login_required
     def task_list():
         """
         Muestra la lista de todas las tareas
@@ -52,7 +63,7 @@ def register_routes(app):
         if sort_by not in ['created', 'date', 'title']:
             sort_by = 'created'
 
-        query = Task.query
+        query = _user_tasks_query()
 
         if filter_type == 'pending':
             query = query.filter_by(completed=False)
@@ -77,9 +88,9 @@ def register_routes(app):
 
         tasks = query.all()
 
-        total_tasks = Task.query.count()
-        pending_count = Task.query.filter_by(completed=False).count()
-        completed_count = Task.query.filter_by(completed=True).count()
+        total_tasks = _user_tasks_query().count()
+        pending_count = _user_tasks_query().filter_by(completed=False).count()
+        completed_count = _user_tasks_query().filter_by(completed=True).count()
 
         # Datos para pasar a la plantilla
         context = {
@@ -95,6 +106,7 @@ def register_routes(app):
  
     
     @app.route('/tasks/new', methods=['GET', 'POST'])
+    @login_required
     def task_create():
         """
         Crea una nueva tarea
@@ -136,7 +148,11 @@ def register_routes(app):
                 due_date=due_date
             )
             task.completed = completed
-            task.save()
+
+            db.session.add(task)
+            db.session.flush()
+            db.session.add(TaskOwner(user_id=current_user.id, task_id=task.id))
+            db.session.commit()
 
             flash('Tarea creada correctamente.', 'success')
             return redirect(url_for('task_list'))
@@ -146,6 +162,7 @@ def register_routes(app):
     
     
     @app.route('/tasks/<int:task_id>')
+    @login_required
     def task_detail(task_id):
         """
         Muestra los detalles de una tarea específica
@@ -156,10 +173,11 @@ def register_routes(app):
         Returns:
             str: HTML con los detalles de la tarea
         """
-        pass # TODO: implementar el método
+        return redirect(url_for('task_edit', task_id=task_id))
     
     
     @app.route('/tasks/<int:task_id>/edit', methods=['GET', 'POST'])
+    @login_required
     def task_edit(task_id):
         """
         Edita una tarea existente
@@ -173,7 +191,7 @@ def register_routes(app):
         Returns:
             str: HTML del formulario o redirección tras editar
         """
-        task = Task.query.get_or_404(task_id)
+        task = _get_user_task(task_id)
 
         if request.method == 'POST':
             title = request.form.get('title', '').strip()
@@ -214,6 +232,7 @@ def register_routes(app):
     
     
     @app.route('/tasks/<int:task_id>/delete', methods=['POST'])
+    @login_required
     def task_delete(task_id):
         """
         Elimina una tarea
@@ -224,13 +243,14 @@ def register_routes(app):
         Returns:
             Response: Redirección a la lista de tareas
         """
-        task = Task.query.get_or_404(task_id)
+        task = _get_user_task(task_id)
         task.delete()
         flash('Tarea eliminada correctamente.', 'success')
         return redirect(url_for('task_list'))
     
     
     @app.route('/tasks/<int:task_id>/toggle', methods=['POST'])
+    @login_required
     def task_toggle(task_id):
         """
         Cambia el estado de completado de una tarea
@@ -241,7 +261,7 @@ def register_routes(app):
         Returns:
             Response: Redirección a la lista de tareas
         """
-        task = Task.query.get_or_404(task_id)
+        task = _get_user_task(task_id)
 
         if task.completed:
             task.mark_pending()
