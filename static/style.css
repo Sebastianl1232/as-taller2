@@ -144,13 +144,22 @@ main {
 }
 
 /* TODO: Estado completado */
-.task-completed .badge-status { }
+.task-completed .badge-status {
+    background-color: var(--success-color);
+    color: #fff;
+}
 
 /* TODO: Estado pendiente */
-.task-pending .badge-status { }
+.task-pending .badge-status {
+    background-color: var(--secondary-color);
+    color: #fff;
+}
 
 /* TODO: Estado vencido */
-.task-overdue .badge-status { }
+.task-overdue .badge-status {
+    background-color: var(--danger-color);
+    color: #fff;
+}
 
 .task-completed td {
     text-decoration: line-through;
