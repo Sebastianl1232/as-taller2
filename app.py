@@ -4,17 +4,9 @@ Este archivo configura y ejecuta la aplicación Flask siguiendo el patrón MVC
 """
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
 from config import config
+from extensions import db, login_manager
 import os
-
-# Crear instancia de SQLAlchemy
-db = SQLAlchemy()
-login_manager = LoginManager()
-login_manager.login_view = 'login'
-login_manager.login_message = 'Debes iniciar sesión para acceder a esta página.'
-login_manager.login_message_category = 'info'
 
 
 def create_app(config_name=None):
