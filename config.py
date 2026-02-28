@@ -15,8 +15,9 @@ class Config:
     # En producción, esto debe venir de una variable de entorno
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
     
-    # Configuración de la base de datos SQLite
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{BASE_DIR / "todo_app.db"}'
+    # Configuración de base de datos
+    # Si no se define DATABASE_URL, se usa una BD en memoria (no crea archivo .db)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///:memory:'
     
     # Desactivar el seguimiento de modificaciones de SQLAlchemy para mejorar el rendimiento
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -39,8 +40,8 @@ class ProductionConfig(Config):
     DEBUG = False
     SECRET_KEY = os.environ.get('SECRET_KEY')
     
-    # En producción, usar PostgreSQL o MySQL
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{BASE_DIR / "todo_app.db"}'
+    # En producción, se debe definir DATABASE_URL (PostgreSQL/MySQL/SQLite administrado)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
 
 class TestingConfig(Config):
