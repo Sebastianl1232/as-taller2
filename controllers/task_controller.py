@@ -42,22 +42,49 @@ def register_routes(app):
         Returns:
             str: HTML renderizado con la lista de tareas
         """
-        # TODO: Implementar en Versión 1
-        # Obtener parámetros de filtro y ordenamiento
         filter_type = request.args.get('filter', 'all')
         sort_by = request.args.get('sort', 'created')
 
-        # Por ahora, solo mostrar una lista vacía
-        tasks = []
+        if filter_type not in ['all', 'pending', 'completed', 'overdue']:
+            filter_type = 'all'
+
+        if sort_by not in ['created', 'date', 'title']:
+            sort_by = 'created'
+
+        query = Task.query
+
+        if filter_type == 'pending':
+            query = query.filter_by(completed=False)
+        elif filter_type == 'completed':
+            query = query.filter_by(completed=True)
+        elif filter_type == 'overdue':
+            query = query.filter(
+                Task.completed == False,
+                Task.due_date.isnot(None),
+                Task.due_date < datetime.utcnow()
+            )
+
+        if sort_by == 'title':
+            query = query.order_by(Task.title.asc())
+        elif sort_by == 'date':
+            query = query.order_by(Task.due_date.asc())
+        else:
+            query = query.order_by(Task.created_at.desc())
+
+        tasks = query.all()
+
+        total_tasks = Task.query.count()
+        pending_count = Task.query.filter_by(completed=False).count()
+        completed_count = Task.query.filter_by(completed=True).count()
 
         # Datos para pasar a la plantilla
         context = {
             'tasks': tasks,
             'filter_type': filter_type,
             'sort_by': sort_by,
-            'total_tasks': len(tasks),
-            'pending_count': 0,
-            'completed_count': 0
+            'total_tasks': total_tasks,
+            'pending_count': pending_count,
+            'completed_count': completed_count
         }
 
         return render_template('task_list.html', **context)
