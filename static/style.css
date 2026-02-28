@@ -166,6 +166,14 @@ main {
     color: var(--text-muted);
 }
 
+.task-overdue {
+    background-color: rgba(220, 53, 69, 0.08);
+}
+
+.task-pending {
+    background-color: rgba(255, 193, 7, 0.06);
+}
+
 .task-actions a {
     margin-right: 0.5rem;
     font-size: 1.1rem;
