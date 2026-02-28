@@ -44,7 +44,7 @@
                             class="form-control" 
                             id="title" 
                             name="title" 
-                            value="{{ task.title if task else '' }}"
+                            value="{{ request.form.get('title', task.title if task else '') }}"
                             placeholder="Ej: Estudiar para el examen de matemáticas"
                             required
                             maxlength="200"
@@ -69,7 +69,7 @@
                             rows="4"
                             placeholder="Describe los detalles de la tarea..."
                             maxlength="1000"
-                        >{{ task.description if task else '' }}</textarea>
+                        >{{ request.form.get('description', task.description if task else '') }}</textarea>
                         <div class="form-text">
                             Opcional. Máximo 1000 caracteres
                         </div>
@@ -85,9 +85,11 @@
                             class="form-control" 
                             id="due_date" 
                             name="due_date"
-                            value="{{ task.due_date.strftime('%Y-%m-%dT%H:%M') if task and task.due_date else '' }}"
-                            min="{{ moment().strftime('%Y-%m-%dT%H:%M') if moment else '' }}"
+                            value="{{ request.form.get('due_date', task.due_date.strftime('%Y-%m-%dT%H:%M') if task and task.due_date else '') }}"
                         >
+                        <div class="invalid-feedback">
+                            Ingresa una fecha de vencimiento válida.
+                        </div>
                         <div class="form-text">
                             Opcional. Selecciona cuándo debe completarse la tarea
                         </div>
@@ -104,7 +106,7 @@
                                 type="checkbox" 
                                 id="completed" 
                                 name="completed"
-                                {{ 'checked' if task and task.completed else '' }}
+                                {{ 'checked' if request.form.get('completed') == 'on' else ('checked' if task and task.completed else '') }}
                             >
                             <label class="form-check-label" for="completed">
                                 Tarea completada
@@ -202,4 +204,21 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('taskForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+});
+</script>
 {% endblock %}
