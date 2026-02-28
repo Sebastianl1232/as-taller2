@@ -11,7 +11,7 @@ from sqlalchemy import case
 from flask_login import current_user, login_required
 from models.task import Task
 from models.user import TaskOwner
-from app import db
+from extensions import db
 
 
 def register_routes(app):
@@ -66,9 +66,9 @@ def register_routes(app):
         query = _user_tasks_query()
 
         if filter_type == 'pending':
-            query = query.filter_by(completed=False)
+            query = query.filter(Task.completed.is_(False))
         elif filter_type == 'completed':
-            query = query.filter_by(completed=True)
+            query = query.filter(Task.completed.is_(True))
         elif filter_type == 'overdue':
             query = query.filter(
                 Task.completed == False,
@@ -89,8 +89,8 @@ def register_routes(app):
         tasks = query.all()
 
         total_tasks = _user_tasks_query().count()
-        pending_count = _user_tasks_query().filter_by(completed=False).count()
-        completed_count = _user_tasks_query().filter_by(completed=True).count()
+        pending_count = _user_tasks_query().filter(Task.completed.is_(False)).count()
+        completed_count = _user_tasks_query().filter(Task.completed.is_(True)).count()
 
         # Datos para pasar a la plantilla
         context = {

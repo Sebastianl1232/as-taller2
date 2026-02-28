@@ -5,7 +5,7 @@ Controlador de autenticación - Registro e inicio/cierre de sesión
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 from models.user import User
-from app import db
+from extensions import db
 
 
 def register_auth_routes(app):
