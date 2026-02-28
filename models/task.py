@@ -67,15 +67,19 @@ class Task(db.Model):
         Returns:
             bool: True si la tarea está vencida, False en caso contrario
         """
-        pass # TODO: implementar el método
-    
+        if not self.due_date:
+            return False
+        if self.completed:
+            return False
+        return self.due_date < datetime.utcnow()
+       
     def mark_completed(self):
         """Marca la tarea como completada"""
-        pass # TODO: implementar el método
+        self.completed = True
     
     def mark_pending(self):
         """Marca la tarea como pendiente"""
-        pass # TODO: implementar el método
+        self.completed = False
     
     @staticmethod
     def get_all_tasks():
@@ -119,7 +123,8 @@ class Task(db.Model):
     
     def save(self):
         """Guarda la tarea en la base de datos"""
-        pass # TODO: implementar el método
+        db.session.add(self)
+        db.session.commit()
     
     def delete(self):
         """Elimina la tarea de la base de datos"""
